@@ -114,8 +114,9 @@ QState QHsmTst_stopped(QHsmTst *me) {
         	case TICK_SIG: {
             		BSP_display("stopped-TICK\n");
 	    
-	    		if (checkPending() == -1){ /*If the current floor is pending, stop for STOP_TIME_F*/
-		    		if (HSM_QHsmTst.stop_time < STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
+	    		if (checkPending() == -1){ 
+				int random_delay = (rand()%10)+1;	/*If the current floor is pending, stop for STOP_TIME_F*/
+		    		if (HSM_QHsmTst.stop_time <( (rand()%10)+1) + STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
 		    		else {
 			    		HSM_QHsmTst.stop_time = 0;
 			    		HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
