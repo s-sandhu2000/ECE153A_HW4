@@ -8,8 +8,8 @@
 static FILE *l_outFile = (FILE *)0;
 static void dispatch(QSignal sig);
 
-#define CALLTIME 50 //200 or 100 or 50 or 20 or 10
-#define TOTAL_SIM_TIME 200
+#define CALLTIME 200 //200 or 100 or 50 or 20 or 10
+#define TOTAL_SIM_TIME 200000
 
 /*..........................................................................*/
 int main(int argc, char *argv[]) {
@@ -84,7 +84,6 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
-
 /*..........................................................................*/
 void Q_onAssert(char const Q_ROM * const Q_ROM_VAR file, int line) {
     fprintf(stderr, "Assertion failed in %s, line %d", file, line);

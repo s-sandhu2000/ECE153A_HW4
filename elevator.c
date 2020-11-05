@@ -6,16 +6,16 @@
 typedef struct QHsmTstTag {
 	QHsm super;             /* extend class QHsm */
                                 /* extended state variables... */
-	int floor_req_curr[5];  /* instantaneous request list */
-	int floor_pen[5];       /* floors to stop at list */
+	int floor_req_curr[6];  /* instantaneous request list */
+	int floor_pen[6];       /* floors to stop at list */
 	int curr_dir;           /* instantaneous direction of travel */
 	int curr_floor;         /* location (updates on arrival event) */
 	int stop_time;          /* counts time to stop on a floor */
 	int move_time;          /* counts time between floors */
 
-	int floor_curr_call_time[5]; /* measures when request is made */
-	int floor_calls[5];          /* keeps track of how many requests were made to each floor */
-	double floor_total_time[5];  /* keeps track of cumulative time to service each request */
+	int floor_curr_call_time[6]; /* measures when request is made */
+	int floor_calls[6];          /* keeps track of how many requests were made to each floor */
+	double floor_total_time[6];  /* keeps track of cumulative time to service each request */
     
 } QHsmTst;
 
@@ -45,7 +45,7 @@ void QHsmTst_ctor(void) {
 	HSM_QHsmTst.curr_floor = 0;
 	HSM_QHsmTst.stop_time = 0;
 	HSM_QHsmTst.move_time = 0;
-	for (x=0; x<5; x++){
+	for (x=0; x<6; x++){
 		HSM_QHsmTst.floor_req_curr[x]=0;
 		HSM_QHsmTst.floor_pen[x]=0;
 		HSM_QHsmTst.floor_calls[x]=0;
@@ -88,7 +88,7 @@ QState QHsmTst_elevator(QHsmTst *me) {
 			}
 		case E: {
 			BSP_display("EMERGENCY!!!!!\n");
-			return Q_TRAN((&QHsmTst_stopped);
+			return Q_TRAN(&QHsmTst_stopped);
 		}
 		case TERMINATE_SIG: {
 			BSP_exit();
@@ -184,11 +184,11 @@ QState QHsmTst_stopped(QHsmTst *me) {
         	}
 		case E: {
 			BSP_display("EMERGENCY!!!!!!\n");
-	    		if (HSM_QHsmTst.floor_pen[0] != 1){ /*If the floor is not pending already, then record its arrival*/
-				HSM_QHsmTst.floor_req_curr[0] = 1;  /*Mark that it is requested*/
-				updatePending(0);                   /*Mark that it is pending*/ 
-				HSM_QHsmTst.floor_curr_call_time[0] = simTime; /*Store the time when it is requested*/
-				HSM_QHsmTst.floor_calls[0]++;                  /*Increment the number of calls to that floor*/
+	    		if (HSM_QHsmTst.floor_pen[5] != 1){ /*If the floor is not pending already, then record its arrival*/
+				HSM_QHsmTst.floor_req_curr[5] = 1;  /*Mark that it is requested*/
+				updatePending(5);                   /*Mark that it is pending*/ 
+				HSM_QHsmTst.floor_curr_call_time[5] = simTime; /*Store the time when it is requested*/
+				HSM_QHsmTst.floor_calls[5]++;                  /*Increment the number of calls to that floor*/
 			}
             		return Q_HANDLED();
 		}
@@ -276,10 +276,10 @@ QState QHsmTst_moving(QHsmTst *me) {
         	}
 		case E: {
 			BSP_display("EMERGENCY!!!!\n");
-	    		if (HSM_QHsmTst.floor_pen[0] != 1 && HSM_QHsmTst.floor_req_curr[0] != 1){ /*If the floor is not already pending or requested, then record its arrival*/
-				HSM_QHsmTst.floor_req_curr[0] = 1; /*Mark that it is requested*/
-				HSM_QHsmTst.floor_curr_call_time[0] = simTime; /*Store the time when it is requested*/
-				HSM_QHsmTst.floor_calls[0]++;                  /*Increment the number of calls to that floor*/
+	    		if (HSM_QHsmTst.floor_pen[5] != 1 && HSM_QHsmTst.floor_req_curr[5] != 1){ /*If the floor is not already pending or requested, then record its arrival*/
+				HSM_QHsmTst.floor_req_curr[5] = 1; /*Mark that it is requested*/
+				HSM_QHsmTst.floor_curr_call_time[5] = simTime; /*Store the time when it is requested*/
+				HSM_QHsmTst.floor_calls[5]++;                  /*Increment the number of calls to that floor*/
 			}
             		return Q_HANDLED();
 		}
@@ -300,7 +300,7 @@ void updatePending(int floor) {
 /*Updates the pending list and clears the request list for all floors*/
 void updatePending_all(void) {
 	int x;
-	for (x=0; x<5; x++) updatePending(x);
+	for (x=0; x<6; x++) updatePending(x);
 	return;
 }
 
@@ -308,7 +308,7 @@ void updatePending_all(void) {
 int checkPending(void) {
 	int x;
 	if (HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] == 1) return (-1);
-	for (x=0; x<5; x++){
+	for (x=0; x<6; x++){
 		if (HSM_QHsmTst.floor_pen[x] == 1 && x != HSM_QHsmTst.curr_floor) return 1;
 	}
 	return 0;
@@ -322,7 +322,7 @@ void findDirection(void){
 	/*If the elevator is moving upwards, first check if any floors in the upward direction are pending
 	  Then check if any floors in the downward direction are pending*/ 	
 	if (HSM_QHsmTst.curr_dir == 1){
-		for (x=HSM_QHsmTst.curr_floor+1; x<5; x++){
+		for (x=HSM_QHsmTst.curr_floor+1; x<6; x++){
 			if (HSM_QHsmTst.floor_pen[x] == 1) {
 				HSM_QHsmTst.curr_dir = 1;
 				return;
@@ -345,7 +345,7 @@ void findDirection(void){
 				return;
 			}
 		}	
-		for (x=HSM_QHsmTst.curr_floor+1; x<5; x++){
+		for (x=HSM_QHsmTst.curr_floor+1; x<6; x++){
 			if (HSM_QHsmTst.floor_pen[x] == 1) {
 				HSM_QHsmTst.curr_dir = 1;
 				return;
@@ -358,7 +358,7 @@ void findDirection(void){
 /*Prints statistics*/
 void printData(void){
 	int x=0;
-	for (x=0; x<5; x++){
+	for (x=0; x<6; x++){
 		printf("F%d calls: %d\n",x+1, HSM_QHsmTst.floor_calls[x]);
 		printf("F%d average time: %f\n",x+1, HSM_QHsmTst.floor_total_time[x]/HSM_QHsmTst.floor_calls[x]);
 		printf("\n");
