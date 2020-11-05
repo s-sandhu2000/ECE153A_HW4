@@ -86,10 +86,6 @@ QState QHsmTst_elevator(QHsmTst *me) {
 			BSP_display("elevator-Floor_Call\n");
 			return Q_TRAN(&QHsmTst_stopped);
 			}
-		case EMERGENCY: {
-			BSP_display("Emergency!\n");
-			return Q_TRAN(&QHsmTst_stopped);
-		}
 		case TERMINATE_SIG: {
 			BSP_exit();
 			return Q_HANDLED();
@@ -197,14 +193,11 @@ QState QHsmTst_stopped(QHsmTst *me) {
 		
 
 	}
-	return Q_TRAN(&QHsmTst_moving);
+	return Q_SUPER(&QHsmTst_elevator);
 		
 	
 }
 			
-	}
-	return Q_SUPER(&QHsmTst_elevator);
-}
 
 
 /*..........................................................................*/
