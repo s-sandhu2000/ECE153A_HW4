@@ -89,6 +89,7 @@ QState QHsmTst_elevator(QHsmTst *me) {
 		case EMERGENCY: {
 			BSP_display("Emergency!\n");
 			return Q_TRAN(&QHsmTst_stopped);
+		}
 		case TERMINATE_SIG: {
 			BSP_exit();
 			return Q_HANDLED();
