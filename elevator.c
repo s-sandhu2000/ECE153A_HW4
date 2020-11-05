@@ -200,7 +200,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
 					{
 						HSM_QHsmTst.floor_pen[j] = 0;
 					}
-						return Q_TRAN(&QHsmTst_moving);
+			//			return Q_TRAN(&QHsmTst_moving);
 					}
             		return Q_HANDLED();
 		}
@@ -300,7 +300,7 @@ QState QHsmTst_moving(QHsmTst *me) {
 			{
 				HSM_QHsmTst.floor_pen[j] = 0;
 			}
-				return Q_TRAN(&QHsmTst_stopped);
+			//	return Q_TRAN(&QHsmTst_stopped);
 			}
 			return Q_HANDLED();
 			}
