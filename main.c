@@ -60,10 +60,7 @@ int main(int argc, char *argv[]) {
 						dispatch(F5_SIG);
 						break;
 						}
-					case 6: {
-						dispatch(EMERGENCY);
-						break;
-					}
+					
 					}
 				}
 	
