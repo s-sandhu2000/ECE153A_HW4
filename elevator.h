@@ -9,8 +9,7 @@ enum QHsmTstSignals {
     F5_SIG,
     TICK_SIG,
     PRINT_SIG,
-    TERMINATE_SIG,
-    EMERGENCY
+    TERMINATE_SIG
 };
 
 extern struct QHsmTstTag HSM_QHsmTst;       /* the sole instance of QHsmTst */
