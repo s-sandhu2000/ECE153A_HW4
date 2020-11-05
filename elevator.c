@@ -86,6 +86,9 @@ QState QHsmTst_elevator(QHsmTst *me) {
 			BSP_display("elevator-Floor_Call\n");
 			return Q_TRAN(&QHsmTst_stopped);
 			}
+		case EMERGENCY: {
+			BSP_display("Emergency!\n");
+			return Q_TRAN(&QHsmTst_stopped);
 		case TERMINATE_SIG: {
 			BSP_exit();
 			return Q_HANDLED();
@@ -178,6 +181,26 @@ QState QHsmTst_stopped(QHsmTst *me) {
 			}
             		return Q_HANDLED();
         	}
+		case EMERGENCY: {
+			BSP_display("Emergency!\n");
+			if (HSM_QHsmTst.floor_pen[0] != 1) { //If the floor is not pending already, then record its arrival
+			HSM_QHsmTst.floor_req_curr[0] = 1; //Mark that floor 1 is requested. 
+			updatePending(0); //
+			HSM_QHsmTst.floor_curr_call_time[0] = simTime; //Store time when reuested 
+			for (int i = 1; i<5; i++) {
+			HSM_QHsmTst.floor_pen[i] = 0; //Clear pending all other floors 
+		}
+			}
+			return Q_TRAN(&QHsmTst_moving);
+		}
+		
+
+	}
+	return Q_TRAN(&QHsmTst_moving);
+		
+	
+}
+			
 	}
 	return Q_SUPER(&QHsmTst_elevator);
 }
@@ -254,6 +277,25 @@ QState QHsmTst_moving(QHsmTst *me) {
 			}
             		return Q_HANDLED();
         	}
+		case EMERGENCY: {
+
+	BSP_display("Emergency!\n");
+	if (HSM_QHsmTst.floor_pen[0] != 1 && HSM_QHsmTst.floor_req_curr[0] != 1){
+		HSM_QHsmTst.floor_req_curr[0] = 1; //Mark that floor 1 is requested
+		HSM_QHsmTst.floor_curr_call_time[0] = simTime; //Store time when requested
+		for (int i = 1; i<5; i++) {
+			HSM_QHsmTst.floor_pen[i] = 0; //Clear all other floors 
+		}
+		 
+	HSM_QHsmTst.floor_calls[0]++; 	// Increment number of calls to the floor
+	if (HSM_QHsmTst.move_time < MOVE_TIME_F-1) HSM_QHsmTst.move_time++; //keeps moving until reaching the desired floor
+	
+	else {
+		HSM_QHsmTst.move_time = 0; 
+		HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/
+		return Q_TRAN(&QHsmTst_stopped); //Switch to stopped state  
+	     }
+}
 	}
 	return Q_SUPER(&QHsmTst_elevator);
 }
