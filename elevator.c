@@ -183,6 +183,14 @@ QState QHsmTst_stopped(QHsmTst *me) {
             		return Q_HANDLED();
         	}
 		case E: {
+			BSP_display("EMERGENCY!!!!!!\n");
+	    		if (HSM_QHsmTst.floor_pen[0] != 1){ /*If the floor is not pending already, then record its arrival*/
+				HSM_QHsmTst.floor_req_curr[0] = 1;  /*Mark that it is requested*/
+				updatePending(0);                   /*Mark that it is pending*/ 
+				HSM_QHsmTst.floor_curr_call_time[0] = simTime; /*Store the time when it is requested*/
+				HSM_QHsmTst.floor_calls[0]++;                  /*Increment the number of calls to that floor*/
+			}
+            		return Q_HANDLED();
 		}
 			
 		
@@ -267,6 +275,13 @@ QState QHsmTst_moving(QHsmTst *me) {
             		return Q_HANDLED();
         	}
 		case E: {
+			BSP_display("EMERGENCY!!!!\n");
+	    		if (HSM_QHsmTst.floor_pen[0] != 1 && HSM_QHsmTst.floor_req_curr[0] != 1){ /*If the floor is not already pending or requested, then record its arrival*/
+				HSM_QHsmTst.floor_req_curr[0] = 1; /*Mark that it is requested*/
+				HSM_QHsmTst.floor_curr_call_time[0] = simTime; /*Store the time when it is requested*/
+				HSM_QHsmTst.floor_calls[0]++;                  /*Increment the number of calls to that floor*/
+			}
+            		return Q_HANDLED();
 		}
 	}
 	return Q_SUPER(&QHsmTst_elevator);
