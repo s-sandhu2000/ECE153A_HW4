@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 		
 		while (simTime < TOTAL_SIM_TIME){
 			if (simTime%CALLTIME == 0){
-				floor_call = (rand()%5)+1;
+				floor_call = (rand()%6)+1;
 				switch (floor_call) {
 					case 1: {
 						dispatch(F1_SIG);
@@ -60,6 +60,10 @@ int main(int argc, char *argv[]) {
 						dispatch(F5_SIG);
 						break;
 						}
+					case 6: {
+						dispatch(EMERGENCY);
+						break;
+					}
 					}
 				}
 	
