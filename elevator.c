@@ -19,6 +19,7 @@ typedef struct QHsmTstTag {
         int emergency_time; //Keeps track of the time the elevator is in emergency mode
 	int emergency_flag; //Alerts if an emergency has been set
 	double total_emergency_time;
+	int emergency_count;
 	
 } QHsmTst;
 
@@ -129,14 +130,14 @@ QState QHsmTst_stopped(QHsmTst *me) {
 		{	
 			if(HSM_QHsmTst.emergency_flag == 1)
 			 { 
-				if(HSM_QHsam.curr_floor == 0)
+				if(HSM_QHsmTst.curr_floor == 0)
 					{
 						HSM_QHsmTst.emergency_flag = 0;
 						if (HSM_QHsmTst.stop_time <( (rand()%10)+1) + STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
 		    					else {
 			    					HSM_QHsmTst.stop_time = 0;
 			    					HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
-								if(checkPending() == 1) return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
+								if(checkPending() == 1) return Q_TRAN(&QHsmTst_moving); //If dany other floor is pending switch to moving state in same tick			
 			    					}
 					}
 				else 
@@ -164,7 +165,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
 
 			if(HSM_QHsmTst.emergency_flag == 1)
 			 { 
-				if(HSM_QHsam.curr_floor == 0)
+				if(HSM_QHsmTst.curr_floor == 0)
 					{
 						HSM_QHsmTst.emergency_flag = 0;
 						return Q_TRAN(&QHsmTst_moving);
@@ -185,7 +186,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
 
 		}
 		return Q_HANDLED();
-}
+}//B
 
         	case F1_SIG: {
             		BSP_display("stopped-F1\n");
@@ -294,7 +295,7 @@ case TICK_SIG:
 		{
 			if(HSM_QHsmTst.curr_dir == 1)
 			{
-				HSM_QHsmTst.curr_dir == 1;
+				HSM_QHsmTst.curr_dir = -1;
 			}
 			for(int i = 1; i<5; i++)
 			{
@@ -447,9 +448,9 @@ void printData(void){
 		printf("F%d average time: %f\n",x+1, HSM_QHsmTst.floor_total_time[x]/HSM_QHsmTst.floor_calls[x]);
 		printf("\n");
 	}
-	printf("Emergency calls: %d\n",HSM_QHsmTst.emergency_flag);
+	printf("Emergency calls: %d\n",HSM_QHsmTst.emergency_count);
 	printf("Total Emergency Time: %f\n", HSM_QHsmTst.total_emergency_time);
-	printf("Average Emergency Time: %f\n",HSM_QHsmTst.total_emergency_time / HSM_QHsmTst.emergency_flag);
+	printf("Average Emergency Time: %f\n",HSM_QHsmTst.total_emergency_time / HSM_QHsmTst.emergency_count);
 
 	return;
 }
