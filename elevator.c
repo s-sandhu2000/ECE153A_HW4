@@ -142,9 +142,10 @@ QState QHsmTst_stopped(QHsmTst *me) {
 					}
 				else 
 				{
-					for(int i = 0; i<5; i++)
+					for(int i = 1; i<5; i++)
 					{
 					  HSM_QHsmTst.floor_pen[i] = 0; 
+					  HSM_QHsmTst.floor_req_curr[i] = 0;
 					}
 					return Q_TRAN(&QHsmTst_moving);
 				}
@@ -172,9 +173,10 @@ QState QHsmTst_stopped(QHsmTst *me) {
 					}
 				else 
 				{
-					for(int i = 0; i<5; i++)
+					for(int i = 1; i<5; i++)
 					{
 					  HSM_QHsmTst.floor_pen[i] = 0; 
+					  HSM_QHsmTst.floor_req_curr[i] = 0;
 					}
 					return Q_TRAN(&QHsmTst_moving);
 				}
@@ -250,15 +252,20 @@ QState QHsmTst_stopped(QHsmTst *me) {
 	HSM_QHsmTst.emergency_time = simTime;
 	HSM_QHsmTst.floor_calls[0]++;
 	HSM_QHsmTst.emergency_count++;
+	for(int i =1; i<5; i++)
+	{
+		HSM_QHsmTst.floor_pen[i] = 0; 
+		HSM_QHsmTst.floor_req_curr[i] = 0;
+	}
 	}
 	if(HSM_QHsmTst.curr_floor == 0)
 	{
 	BSP_display("Stopped-F1\n");
 	HSM_QHsmTst.emergency_flag = 0;
-	HSM_QHsmTst.floor_req_curr[0] = 1;
-	updatePending(0);
-	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
-	HSM_QHsmTst.floor_calls[0]++;
+	//HSM_QHsmTst.floor_req_curr[0] = 1;
+	//updatePending(0);
+//	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+//	HSM_QHsmTst.floor_calls[0]++;
 	}
 	return Q_HANDLED();
 	
@@ -312,6 +319,7 @@ case TICK_SIG:
 			for(int i = 1; i<5; i++)
 			{
 				HSM_QHsmTst.floor_pen[i] = 0;
+				HSM_QHsmTst.floor_req_curr[i] = 0;
 			}
 			return Q_TRAN(&QHsmTst_stopped);
 		}
@@ -380,14 +388,19 @@ case TICK_SIG:
 	HSM_QHsmTst.emergency_time = simTime;
 	HSM_QHsmTst.floor_calls[0]++;
 	HSM_QHsmTst.emergency_count++;
+	for(int i = 1; i < 5; i++)
+	{
+		HSM_QHsmTst.floor_pen[i] = 0;
+		HSM_QHsmTst.floor_req_curr[i] = 0;
+	}
 	}
 	else if(HSM_QHsmTst.curr_floor == 0)
 	{
 		BSP_display("moving-F1\n");
 		HSM_QHsmTst.emergency_flag = 0;
-		HSM_QHsmTst.floor_req_curr[0] = 1;
-		HSM_QHsmTst.floor_curr_call_time[0] = simTime;
-		HSM_QHsmTst.floor_calls[0]++;
+	//	HSM_QHsmTst.floor_req_curr[0] = 1;
+	//	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+	//	HSM_QHsmTst.floor_calls[0]++;
 	}
 	return Q_HANDLED();
 }
@@ -475,6 +488,6 @@ void printData(void){
 	printf("Emergency calls: %d\n",HSM_QHsmTst.emergency_count);
 	printf("Total Emergency Time: %f\n", HSM_QHsmTst.total_emergency_time);
 	printf("Average Emergency Time: %f\n",HSM_QHsmTst.total_emergency_time / HSM_QHsmTst.emergency_count);
-
+	printf("Testing current floor: %d\n",HSM_QHsmTst.curr_floor);
 	return;
 }
