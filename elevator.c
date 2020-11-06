@@ -130,16 +130,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
 		    		else {
 			    		HSM_QHsmTst.stop_time = 0;
 			    		HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
-					if(HSM_QHsmTst.curr_floor = 0 && HSM_QHsmTst.flag == 1) {  //Checks to see if the current floor is floor 1 (given that the emergency key is on) 
-						HSM_QHsmTst.flag = 0;
-						if(checkPending() == 1 return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick
-					}
-					else 
-					{
-			    		if (checkPending() == 1) {
-					        	return Q_TRAN(&QHsmTst_moving); /*If any other floor is pending, switch to the moving state in the same tick*/
-						}   
-					}
+					if(checkPending() == 1 return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
 			    	}
 			}
 	   		
@@ -249,15 +240,8 @@ QState QHsmTst_moving(QHsmTst *me) {
 	    		else {
 				HSM_QHsmTst.move_time = 0;
 				HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/
-				if(HSM_QHsmTst.flag == 0 || (HSM_QHsmTst.flag == 1 && HSM_QHsmTst.curr_floor == 0))  {
-				if (checkPending() == -1 ) return Q_TRAN(&QHsmTst_stopped); /*Switch to stopped if the current floor is pending*/ 
-				updatePending_all(); /*Updating pending floors here makes sure that only calls (to the current floor) that were made more than 1 floor away make the elevator stop*/
-				}
-				else if(HSM_QHsmTst.flag == 1 && HSM_QHsmTst.curr_floor !=1) 
-				{
-					break;
-				}
 				
+				if (checkPending() == -1 ) return Q_TRAN(&QHsmTst_stopped); /*Switch to stopped if the current floor is pending*/
 		 	} 
             		return Q_HANDLED();
         	}
