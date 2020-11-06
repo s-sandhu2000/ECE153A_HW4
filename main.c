@@ -9,7 +9,7 @@ static FILE *l_outFile = (FILE *)0;
 static void dispatch(QSignal sig);
 
 #define CALLTIME 200 //200 or 100 or 50 or 20 or 10
-#define TOTAL_SIM_TIME 200
+#define TOTAL_SIM_TIME 20000
 
 /*..........................................................................*/
 int main(int argc, char *argv[]) {
