@@ -240,6 +240,8 @@ QState QHsmTst_stopped(QHsmTst *me) {
         	}
 		case E: 
 {
+	if(HSM_QHsmTst.curr_floor != 0)
+	{
 	BSP_display("Emergency!\n");
 	HSM_QHsmTst.emergency_flag = 1;
 	HSM_QHsmTst.floor_req_curr[0] = 1;
@@ -248,6 +250,16 @@ QState QHsmTst_stopped(QHsmTst *me) {
 	HSM_QHsmTst.emergency_time = simTime;
 	HSM_QHsmTst.floor_calls[0]++;
 	HSM_QHsmTst.emergency_count++;
+	}
+	if(HSM_QHsmTst.curr_floor == 0)
+	{
+	BSP_display("Stopped-F1\n");
+	HSM_QHsmTst.emergency_flag = 0;
+	HSM_QHsmTst.floor_req_curr[0] = 1;
+	updatePending(0);
+	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+	HSM_QHsmTst.floor_calls[0]++;
+	}
 	return Q_HANDLED();
 	
 }
@@ -359,13 +371,24 @@ case TICK_SIG:
         	}
 		case E:
 {
-BSP_display("Emergency!\n");
+	if(HSM_QHsmTst.curr_floor !=0)
+	{
+	BSP_display("Emergency!\n");
 	HSM_QHsmTst.emergency_flag = 1;
 	HSM_QHsmTst.floor_req_curr[0] = 1;
 	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
 	HSM_QHsmTst.emergency_time = simTime;
 	HSM_QHsmTst.floor_calls[0]++;
 	HSM_QHsmTst.emergency_count++;
+	}
+	else if(HSM_QHsmTst.curr_floor == 0)
+	{
+		BSP_display("moving-F1\n");
+		HSM_QHsmTst.emergency_flag = 0;
+		HSM_QHsmTst.floor_req_curr[0] = 1;
+		HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+		HSM_QHsmTst.floor_calls[0]++;
+	}
 	return Q_HANDLED();
 }
 		}
@@ -445,6 +468,7 @@ void printData(void){
 	int x=0;
 	for (x=0; x<5; x++){
 		printf("F%d calls: %d\n",x+1, HSM_QHsmTst.floor_calls[x]);
+		printf("F%d total time: %f\n", x+1, HSM_QHsmTst.floor_total_time[x]);
 		printf("F%d average time: %f\n",x+1, HSM_QHsmTst.floor_total_time[x]/HSM_QHsmTst.floor_calls[x]);
 		printf("\n");
 	}
