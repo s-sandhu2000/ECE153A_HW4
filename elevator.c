@@ -19,7 +19,7 @@ typedef struct QHsmTstTag {
         int emergency_time; //Keeps track of the time the elevator is in emergency mode
 	int emergency_flag; //Alerts if an emergency has been set
 	double total_emergency_time;
-	int flag;
+	
 } QHsmTst;
 
 void   QHsmTst_ctor(void);                               /* the ctor */
@@ -58,7 +58,7 @@ void QHsmTst_ctor(void) {
 	HSM_QHsmTst.emergency_time = 0;
 	HSM_QHsmTst.emergency_flag = 0;
 	HSM_QHsmTst.total_emergency_time = 0;
-	HSM_QHsmTst.flag = 0;
+	//HSM_QHsmTst.flag = 0;
 }
 
 /*..........................................................................*/
@@ -130,11 +130,11 @@ QState QHsmTst_stopped(QHsmTst *me) {
 		    		else {
 			    		HSM_QHsmTst.stop_time = 0;
 			    		HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
-					if(checkPending() == 1 return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
+					if(checkPending() == 1) return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
 			    	}
 			}
 	   		
-			else if (checkPending() == 1) return Q_TRAN(&QHsmTst_moving); /*If any other floor becomes pending later, switch to the moving state*/
+			else if (checkPending() == 1) return Q_TRAN(&QHsmTst_moving);
 		
 	   		return Q_HANDLED();
 		}
@@ -190,12 +190,13 @@ QState QHsmTst_stopped(QHsmTst *me) {
         	}
 		case E: {
 			BSP_display("EMERGENCY!!!!!!\n");
-	    		if (HSM_QHsmTst.floor_pen[0]!=1)
-					{
-						HSM_QHsmTst.flag = 1;
+	    	//	if (HSM_QHsmTst.floor_pen[0]!=1)
+		//			{
+					//	HSM_QHsmTst.flag = 1;
 						HSM_QHsmTst.floor_req_curr[0] = 1;
 						updatePending(0);
 						HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+						HSM_QHsmTst.floor_calls[0]++;
 						HSM_QHsmTst.emergency_time = simTime;
 						HSM_QHsmTst.emergency_flag++;
 						for(int j = 1; j<5; j++)
@@ -203,7 +204,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
 						HSM_QHsmTst.floor_pen[j] = 0;
 					}
 		//			return Q_TRAN(&QHsmTst_moving);
-					}
+		//			}
             		return Q_HANDLED();
 		}
 			
@@ -230,7 +231,7 @@ QState QHsmTst_moving(QHsmTst *me) {
             		BSP_display("moving-EXIT\n");
 	    		HSM_QHsmTst.floor_total_time[HSM_QHsmTst.curr_floor] += (simTime - HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor]); //Keep cumulative sum of service times
 			HSM_QHsmTst.total_emergency_time += (simTime - HSM_QHsmTst.emergency_time); // Keep cumulative sum of emergency time 
-			HSM_QHsmTst.emergency_time = 0; //Reset the call emergency time 
+			HSM_QHsmTst.emergency_time = -1; //Reset the call emergency time 
 	    		HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor] = -1; /*Reset the call time*/
             		return Q_HANDLED();
         	}
@@ -239,9 +240,9 @@ QState QHsmTst_moving(QHsmTst *me) {
 	    		if (HSM_QHsmTst.move_time < MOVE_TIME_F-1) HSM_QHsmTst.move_time++;
 	    		else {
 				HSM_QHsmTst.move_time = 0;
-				HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/
-				
+				HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/	
 				if (checkPending() == -1 ) return Q_TRAN(&QHsmTst_stopped); /*Switch to stopped if the current floor is pending*/
+				updatePending_all();
 		 	} 
             		return Q_HANDLED();
         	}
@@ -292,9 +293,9 @@ QState QHsmTst_moving(QHsmTst *me) {
         	}
 		case E: {
 			BSP_display("EMERGENCY!!!!\n");
-	    		if (HSM_QHsmTst.floor_pen[0] !=1 && HSM_QHsmTst.floor_req_curr[0] !=1)
-			{
-				HSM_QHsmTst.flag = 1;
+	    	//	if (HSM_QHsmTst.floor_pen[0] !=1 && HSM_QHsmTst.floor_req_curr[0] !=1)
+		//	{
+			//	HSM_QHsmTst.flag = 1;
 				HSM_QHsmTst.floor_req_curr[0] = 1;
 				HSM_QHsmTst.floor_curr_call_time[0] = simTime;
 				HSM_QHsmTst.floor_calls[0]++;
@@ -305,7 +306,7 @@ QState QHsmTst_moving(QHsmTst *me) {
 				HSM_QHsmTst.floor_pen[j] = 0;
 			}
 		//		return Q_TRAN(&QHsmTst_stopped);
-			}
+		//	}
 			return Q_HANDLED();
 			}
 		}
