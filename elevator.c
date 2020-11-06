@@ -122,22 +122,71 @@ QState QHsmTst_stopped(QHsmTst *me) {
 			BSP_display("stopped-EXIT\n");
 			return Q_HANDLED();
         		}
-        	case TICK_SIG: {
-            		BSP_display("stopped-TICK\n");
-	    
-	    		if (checkPending() == -1){ /*If the current floor is pending, stop for STOP_TIME_F*/
-		    		if (HSM_QHsmTst.stop_time <( (rand()%10)+1) + STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
+        	case TICK_SIG: 
+	{ 
+		BSP_display("Emergency!\n");
+		if(checkPending()==-1)
+		{	
+			if(HSM_QHsmTst.emergency_flag == 1)
+			 { 
+				if(HSM_QHsam.curr_floor == 0)
+					{
+						HSM_QHsmTst.emergency_flag = 0;
+						if (HSM_QHsmTst.stop_time <( (rand()%10)+1) + STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
+		    					else {
+			    					HSM_QHsmTst.stop_time = 0;
+			    					HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
+								if(checkPending() == 1) return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
+			    					}
+					}
+				else 
+				{
+					for(int i = 0; i<5; i++)
+					{
+					  HSM_QHsmTst.floor_pen[i] = 0; 
+					}
+					return Q_TRAN(&QHsmTst_moving);
+				}
+			}
+			else if(HSM_QHsmTst.emergency_flag == 0)
+			{
+				if (HSM_QHsmTst.stop_time <( (rand()%10)+1) + STOP_TIME_F-1) HSM_QHsmTst.stop_time++;
 		    		else {
 			    		HSM_QHsmTst.stop_time = 0;
 			    		HSM_QHsmTst.floor_pen[HSM_QHsmTst.curr_floor] = 0; /*Clear that the floor is pending*/ 
 					if(checkPending() == 1) return Q_TRAN(&QHsmTst_moving); //If any other floor is pending switch to moving state in same tick			
-			    	}
+			    	     }
 			}
-	   		
-			else if (checkPending() == 1) return Q_TRAN(&QHsmTst_moving);
-		
-	   		return Q_HANDLED();
 		}
+		else if(checkPending() == 1)
+		{
+
+
+			if(HSM_QHsmTst.emergency_flag == 1)
+			 { 
+				if(HSM_QHsam.curr_floor == 0)
+					{
+						HSM_QHsmTst.emergency_flag = 0;
+						return Q_TRAN(&QHsmTst_moving);
+					}
+				else 
+				{
+					for(int i = 0; i<5; i++)
+					{
+					  HSM_QHsmTst.floor_pen[i] = 0; 
+					}
+					return Q_TRAN(&QHsmTst_moving);
+				}
+			}
+			else if(HSM_QHsmTst.emergency_flag == 0)
+			{
+				return Q_TRAN(&QHsmTst_moving);
+			}
+
+		}
+		return Q_HANDLED();
+}
+
         	case F1_SIG: {
             		BSP_display("stopped-F1\n");
 	    		if (HSM_QHsmTst.floor_pen[0] != 1){ /*If the floor is not pending already, then record its arrival*/
@@ -188,25 +237,19 @@ QState QHsmTst_stopped(QHsmTst *me) {
 			}
             		return Q_HANDLED();
         	}
-		case E: {
-			BSP_display("EMERGENCY!!!!!!\n");
-	    	//	if (HSM_QHsmTst.floor_pen[0]!=1)
-		//			{
-					//	HSM_QHsmTst.flag = 1;
-						HSM_QHsmTst.floor_req_curr[0] = 1;
-						updatePending(0);
-						HSM_QHsmTst.floor_curr_call_time[0] = simTime;
-						HSM_QHsmTst.floor_calls[0]++;
-						HSM_QHsmTst.emergency_time = simTime;
-						HSM_QHsmTst.emergency_flag++;
-						for(int j = 1; j<5; j++)
-					{
-						HSM_QHsmTst.floor_pen[j] = 0;
-					}
-		//			return Q_TRAN(&QHsmTst_moving);
-		//			}
-            		return Q_HANDLED();
-		}
+		case E: 
+{
+	BSP_display("Emergency!\n");
+	HSM_QHsmTst.emergency_flag = 1;
+	HSM_QHsmTst.floor_req_curr[0] = 1;
+	updatePending(0);
+	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+	HSM_QHsmTst.emergency_time = simTime;
+	HSM_QHsmTst.floor_calls[0]++;
+	HSM_QHsmTst.emergency_count++;
+	return Q_HANDLED();
+	
+}
 			
 		
 
@@ -227,25 +270,47 @@ QState QHsmTst_moving(QHsmTst *me) {
 			findDirection();    /*Find the direction of movement*/
             		return Q_HANDLED();
         	}
-        	case Q_EXIT_SIG: {
-            		BSP_display("moving-EXIT\n");
-	    		HSM_QHsmTst.floor_total_time[HSM_QHsmTst.curr_floor] += (simTime - HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor]); //Keep cumulative sum of service times
-			HSM_QHsmTst.total_emergency_time += (simTime - HSM_QHsmTst.emergency_time); // Keep cumulative sum of emergency time 
-			HSM_QHsmTst.emergency_time = -1; //Reset the call emergency time 
-	    		HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor] = -1; /*Reset the call time*/
-            		return Q_HANDLED();
-        	}
-        	case TICK_SIG: {
-            		BSP_display("moving-TICK\n");
-	    		if (HSM_QHsmTst.move_time < MOVE_TIME_F-1) HSM_QHsmTst.move_time++;
-	    		else {
-				HSM_QHsmTst.move_time = 0;
-				HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/	
-				if (checkPending() == -1 ) return Q_TRAN(&QHsmTst_stopped); /*Switch to stopped if the current floor is pending*/
-				updatePending_all();
-		 	} 
-            		return Q_HANDLED();
-        	}
+        	case Q_EXIT_SIG: 
+{
+	BSP_display("moving-EXIT\n");
+	HSM_QHsmTst.floor_total_time[HSM_QHsmTst.curr_floor] += (simTime - HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor]); //Keep cumulative sum of service times
+	HSM_QHsmTst.floor_curr_call_time[HSM_QHsmTst.curr_floor] = -1; /*Reset the call time*/
+	if(HSM_QHsmTst.emergency_flag == 1)
+	{
+	HSM_QHsmTst.total_emergency_time += (simTime - HSM_QHsmTst.emergency_time); // Keep cumulative sum of emergency time 
+	HSM_QHsmTst.emergency_time = -1; //Reset the call emergency time 
+	}
+	return Q_HANDLED();
+}
+        	
+case TICK_SIG:
+{
+	BSP_display("moving-TICK\n");
+	if (HSM_QHsmTst.move_time < MOVE_TIME_F-1) HSM_QHsmTst.move_time++;
+	else {
+		HSM_QHsmTst.move_time = 0;
+		HSM_QHsmTst.curr_floor = HSM_QHsmTst.curr_floor + HSM_QHsmTst.curr_dir; /*Update the current floor*/
+		if (HSM_QHsmTst.emergency_flag == 1)
+		{
+			if(HSM_QHsmTst.curr_dir == 1)
+			{
+				HSM_QHsmTst.curr_dir == 1;
+			}
+			for(int i = 1; i<5; i++)
+			{
+				HSM_QHsmTst.floor_pen[i] = 0;
+			}
+			return Q_TRAN(&QHsmTst_stopped);
+		}
+		else if(HSM_QHsmTst.emergency_flag == 0)
+		{
+			if(checkPending() == -1) return Q_TRAN(&QHsmTst_stopped);
+			updatePending_all();
+			}
+	   	 }
+			return Q_HANDLED();	
+			}
+
         	case F1_SIG: {
             		BSP_display("moving-F1\n");
 	    		if (HSM_QHsmTst.floor_pen[0] != 1 && HSM_QHsmTst.floor_req_curr[0] != 1){ /*If the floor is not already pending or requested, then record its arrival*/
@@ -291,24 +356,17 @@ QState QHsmTst_moving(QHsmTst *me) {
 			}
             		return Q_HANDLED();
         	}
-		case E: {
-			BSP_display("EMERGENCY!!!!\n");
-	    	//	if (HSM_QHsmTst.floor_pen[0] !=1 && HSM_QHsmTst.floor_req_curr[0] !=1)
-		//	{
-			//	HSM_QHsmTst.flag = 1;
-				HSM_QHsmTst.floor_req_curr[0] = 1;
-				HSM_QHsmTst.floor_curr_call_time[0] = simTime;
-				HSM_QHsmTst.floor_calls[0]++;
-				HSM_QHsmTst.emergency_time = simTime;
-				HSM_QHsmTst.emergency_flag++;
-				for (int j = 1; j<5; j++)
-			{
-				HSM_QHsmTst.floor_pen[j] = 0;
-			}
-		//		return Q_TRAN(&QHsmTst_stopped);
-		//	}
-			return Q_HANDLED();
-			}
+		case E:
+{
+BSP_display("Emergency!\n");
+	HSM_QHsmTst.emergency_flag = 1;
+	HSM_QHsmTst.floor_req_curr[0] = 1;
+	HSM_QHsmTst.floor_curr_call_time[0] = simTime;
+	HSM_QHsmTst.emergency_time = simTime;
+	HSM_QHsmTst.floor_calls[0]++;
+	HSM_QHsmTst.emergency_count++;
+	return Q_HANDLED();
+}
 		}
 	return Q_SUPER(&QHsmTst_elevator);
 	}
