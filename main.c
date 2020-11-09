@@ -7,84 +7,82 @@
 /* local objects -----------------------------------------------------------*/
 static FILE *l_outFile = (FILE *)0;
 static void dispatch(QSignal sig);
-//Parameters for call time and total simulation time
 
 #define CALLTIME 20 //200 or 100 or 50 or 20 or 10
-#define TOTAL_SIM_TIME 500
+#define TOTAL_SIM_TIME 100000
 
 /*..........................................................................*/
 int main(int argc, char *argv[]) {
-	QHsmTst_ctor();                                  /* instantiate the HSM */
+    QHsmTst_ctor();                                  /* instantiate the HSM */
 
-	if (argc > 1) {                                  /* file name provided? */
-		l_outFile = fopen(argv[1], "w");
+    if (argc > 1) {                                  /* file name provided? */
+        l_outFile = fopen(argv[1], "w");
 
-		printf("Elevator Controller Model, built on %s at %s, QP-nano %s\n"
-			"output saved to %s\n",
-			__DATE__, __TIME__, QP_getVersion(),
-			argv[1]);
+        printf("Elevator Controller Model, built on %s at %s, QP-nano %s\n"
+               "output saved to %s\n",
+               __DATE__, __TIME__, QP_getVersion(),
+               argv[1]);
 
-		fprintf(l_outFile, "QHsmTst example, QP-nano %s\n",
-		QP_getVersion());
+        fprintf(l_outFile, "QHsmTst example, QP-nano %s\n",
+                QP_getVersion());
 
-		QHsm_init((QHsm *)&HSM_QHsmTst);    /* take the initial transitioin */
-	
-		printf("Testing elevator controller model!\n\n");
+        QHsm_init((QHsm *)&HSM_QHsmTst);    /* take the initial transitioin */
 
-		
-		int floor_call = 0;
-		simTime = 0;
-		printf("Entering random call mode!\n\n");
-		srand(time(NULL));
-		
-		while (simTime < TOTAL_SIM_TIME){
-			if (simTime%CALLTIME == 0){
-				floor_call = (rand()%6)+1;
-				switch (floor_call) {
-					case 1: {
-						dispatch(F1_SIG);
-						break;
-						}
-					case 2: {
-						dispatch(F2_SIG);
-						break;
-						}
-					case 3: {
-						dispatch(F3_SIG);
-						break;
-						}
-					case 4: {
-						dispatch(F4_SIG);
-						break;
-						}
-					case 5: {
-						dispatch(F5_SIG);
-						break;
-						}
-					case 6:
-						{
-						dispatch(E);
-						break;
-						}
-					
-					}
-				}
-	
-			dispatch(TICK_SIG);
-			simTime++;
-		}
+        printf("Testing elevator controller model!\n\n");
 
-		printf("Results for call time:%d seconds\n",CALLTIME);	
- 		dispatch(PRINT_SIG); 
-       
-		fclose(l_outFile);
 
-	}
+        int floor_call = 0;
+        simTime = 0;
+        printf("Entering random call mode!\n\n");
+        srand(time(NULL));
 
-	else printf("Enter the name of the file for storing results\n");
+        while (simTime < TOTAL_SIM_TIME){
+            if (simTime%500==0 && simTime>=1){
+                    dispatch(EMER_SIG);
+//                    break;
+                }
+            else if (simTime%CALLTIME == 0){
+                floor_call = (rand()%5)+1;
+                switch (floor_call) {
+                    case 1: {
+                        dispatch(F1_SIG);
+                        break;
+                    }
+                    case 2: {
+                        dispatch(F2_SIG);
+                        break;
+                    }
+                    case 3: {
+                        dispatch(F3_SIG);
+                        break;
+                    }
+                    case 4: {
+                        dispatch(F4_SIG);
+                        break;
+                    }
+                    case 5: {
+                        dispatch(F5_SIG);
+                        break;
+                    }
+                }
+            }
 
-	return 0;
+            dispatch(TICK_SIG);
+            simTime++;
+        }
+
+        printf("Results for call time:%d seconds\n",CALLTIME);
+        dispatch(PRINT_SIG);
+
+        fclose(l_outFile);
+
+    }
+
+    else printf("Enter the name of the file for storing results\n");
+
+    return 0;
 }
+
 /*..........................................................................*/
 void Q_onAssert(char const Q_ROM * const Q_ROM_VAR file, int line) {
     fprintf(stderr, "Assertion failed in %s, line %d", file, line);
