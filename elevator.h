@@ -7,7 +7,7 @@ enum QHsmTstSignals {
     F3_SIG,
     F4_SIG,
     F5_SIG,
-    EMER_SIG,
+    E,
     TICK_SIG,
     PRINT_SIG,
     TERMINATE_SIG
