@@ -125,7 +125,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
             if (checkPending() == -1){ /*If the current floor is pending, stop for STOP_TIME_F*/
                 if (flag==1){
                     flag=0;
-                    if  ((simTime - HSM_QHsmTst.emergency_time; ) > HSM_QHsmTst.worst_case){
+                    if  ((simTime - HSM_QHsmTst.emergency_time) > HSM_QHsmTst.worst_case){
                         HSM_QHsmTst.worst_case = (simTime - HSM_QHsmTst.emergency_time);
                     }
                     HSM_QHsmTst.total_emergency_time += (simTime - HSM_QHsmTst.emergency_time);
@@ -273,7 +273,7 @@ QState QHsmTst_moving(QHsmTst *me) {
                 if (checkPending() == -1) return Q_TRAN(&QHsmTst_stopped); /*Switch to stopped if the current floor is pending*/
                 updatePending_all(); /*Updating pending floors here makes sure that only calls (to the current floor) that were made more than 1 floor away make the elevator stop*/
             }
-            if(EMER) HSM_QHsmTst.curr_dir = -1;
+            if(flag) HSM_QHsmTst.curr_dir = -1;
             return Q_HANDLED();
         }
         case F1_SIG: {
