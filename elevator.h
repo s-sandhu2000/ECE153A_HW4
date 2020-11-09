@@ -7,16 +7,16 @@ enum QHsmTstSignals {
     F3_SIG,
     F4_SIG,
     F5_SIG,
-    E,
+    EMER_SIG,
     TICK_SIG,
     PRINT_SIG,
-    TERMINATE_SIG,
+    TERMINATE_SIG
 };
 
 extern struct QHsmTstTag HSM_QHsmTst;       /* the sole instance of QHsmTst */
 
 extern int simTime;
-extern int STOP_TIME_F;
+//extern int STOP_TIME_F;
 extern int MOVE_TIME_F;
 void QHsmTst_ctor(void);              /* instantiate and initialize the HSM */
 
