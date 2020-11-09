@@ -216,7 +216,7 @@ QState QHsmTst_stopped(QHsmTst *me) {
                 HSM_QHsmTst.emergency_callnum++;
 
                 flag = 1;
-//            return Q_TRAN(&QHsmTst_moving);
+
             return Q_HANDLED();
         }
     }
