@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
         while (simTime < TOTAL_SIM_TIME){
             if (simTime%500==0 && simTime>=1){
-                    dispatch(EMER_SIG);
+                    dispatch(E);
 //                    break;
                 }
             else if (simTime%CALLTIME == 0){
