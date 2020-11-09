@@ -253,15 +253,22 @@ QState QHsmTst_moving(QHsmTst *me) {
         case TICK_SIG: {
             BSP_display("moving-TICK\n");
             switch(flag) {
-                case 0: BSP_display("No Emergency"); break;
-                case 1: BSP_display("Emergency!!!"); break;
+                case 0: BSP_display("No Emergency\n");
+			break;
+                case 1: BSP_display("Emergency!!!\n"); 
+			break;
             }
             switch(HSM_QHsmTst.curr_floor){
-                case 0: BSP_display("floor=0\n"); break;
-                case 1: BSP_display("floor=1\n"); break;
-                case 2: BSP_display("floor=2\n"); break;
-                case 3: BSP_display("floor=3\n"); break;
-                case 4: BSP_display("floor=4\n"); break;
+                case 0: BSP_display("floor=0\n"); 
+			break;
+                case 1: BSP_display("floor=1\n"); 
+			break;
+                case 2: BSP_display("floor=2\n"); 
+			break;
+                case 3: BSP_display("floor=3\n"); 
+			break;
+                case 4: BSP_display("floor=4\n"); 
+			break;
             }
             if(flag && HSM_QHsmTst.curr_floor==0){
                 return Q_TRAN(&QHsmTst_stopped);
